@@ -62,6 +62,30 @@ pub fn jaro(a: &str, b: &str) -> f64 {
                        ((matches - transpositions) / matches))
     }
 }
+
+/// Like Jaro but gives a boost to strings that have a common prefix.
+///
+/// Examples:
+/// ```
+/// assert!((0.911 - jaro_winkler("cheeseburger", "cheese fries")).abs() < 0.001);
+/// ```
+pub fn jaro_winkler(a: &str, b: &str) -> f64 {
+    let jaro_distance = jaro(a, b);
+
+    let prefrix_length = a.chars()
+        .zip(b.chars())
+        .take_while(|&(a_char, b_char)| a_char == b_char)
+        .count();
+
+    let jaro_winkler_distance = jaro_distance + (0.1 * prefrix_length as f64 * (1.0 - jaro_distance));
+
+    if jaro_winkler_distance <= 1.0 {
+        jaro_winkler_distance
+    } else {
+        1.0
+    }
+}
+
 /// Calculates the minimum number of insertions, deletions and substitutions
 /// required to change on string into the other.
 ///
