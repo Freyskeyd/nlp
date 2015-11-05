@@ -1,5 +1,67 @@
-use std::cmp::{min};
+use std::cmp::{min, max};
 
+/// Calculates the Jaro similarity between two strings. The returned value is between 0.0 and 1.0
+/// (higher value means more similar).
+///
+/// Examples:
+/// ```
+/// assert!((0.392 - jaro("Friedrich Nietzsche", "Jean-Paul Sartre")).abs() < 0.001);
+/// ```
+pub fn jaro(a: &str, b: &str) -> f64 {
+    if a == b { return 1.0; }
+    if a.len() == 0 || b.len() == 0 { return 0.0; }
+
+    let search_range = max(0, (max(a.len(), b.len()) / 2) - 1);
+
+    let mut b_consumed = Vec::with_capacity(b.len());
+    for _ in 0..b.len() {
+        b_consumed.push(false);
+    }
+
+    let mut matches = 0.0;
+    let mut transpositions = 0.0;
+    let mut b_match_index = 0;
+
+    for (i, a_char) in a.chars().enumerate() {
+        let min_bound =
+            // prevent integer wrapping
+            if i > search_range {
+                max(0, i - search_range)
+            } else {
+                0
+            };
+
+        let max_bound = min(b.len() - 1, i + search_range);
+
+        if min_bound > max_bound {
+            continue;
+        }
+
+        for (j, b_char) in b.chars().enumerate() {
+            if min_bound <= j && j <= max_bound {
+                if a_char == b_char && !b_consumed[j] {
+                    b_consumed[j] = true;
+                    matches += 1.0;
+
+                    if j < b_match_index {
+                        transpositions += 1.0;
+                    }
+
+                    b_match_index = j;
+                    break;
+                }
+            }
+        }
+    }
+
+    if matches == 0.0 {
+        0.0
+    } else {
+        (1.0 / 3.0) * ((matches / a.len() as f64) +
+                       (matches / b.len() as f64) +
+                       ((matches - transpositions) / matches))
+    }
+}
 /// Calculates the minimum number of insertions, deletions and substitutions
 /// required to change on string into the other.
 ///
@@ -81,5 +143,42 @@ mod tests {
     #[test]
     fn levenshtein_second_empty() {
         assert_eq!(6, levenshtein("kitten", ""))
+    }
+
+    // Jaro
+    #[test]
+    fn jaro_empty_string() {
+        assert_eq!(1.0, jaro("",""))
+    }
+
+    #[test]
+    fn jaro_first_empty() {
+        assert_eq!(0.0, jaro("", "jaro"))
+    }
+
+    #[test]
+    fn jaro_second_empty() {
+        assert_eq!(0.0, jaro("distance", ""))
+    }
+
+    #[test]
+    fn jaro_same() {
+        assert_eq!(1.0, jaro("jaro", "jaro"))
+    }
+
+    #[test]
+    fn jaro_diff_short() {
+        assert!((0.767 - jaro("dixon", "dicksonx")).abs() < 0.001)
+    }
+
+    #[test]
+    fn jaro_diff_no_transposition() {
+        assert!((0.944 - jaro("martha", "marhta")).abs() < 0.001)
+    }
+
+    #[test]
+    fn jaro_diff_with_transposition() {
+        assert!((0.392 - jaro("Friedrich Nietzsche",
+                              "Jean-Paul Sartre")).abs() < 0.001)
     }
 }
