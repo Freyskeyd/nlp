@@ -128,6 +128,25 @@ pub fn levenshtein(a: &str, b: &str) -> usize {
     curr_distances[b.len()]
 }
 
+/// Calculates the levenshtein distance between a string and each string in a vector. Returns a
+/// vector of corresponding values.
+///
+/// Examples:
+/// ```
+/// let v = vec!["test", "test1", "test12", "test123", "", "tset"];
+/// let result = levenshtein_against_vec("test", &v);
+/// let expect = vec![0, 1, 2, 3, 4, 2];
+/// assert_eq!(expect, result);
+/// ```
+pub fn levenshtein_against_vec(a: &str, v: &Vec<&str>) -> Vec<usize> {
+    let mut r: Vec<usize> = Vec::with_capacity(v.len());
+    for b in v.iter() {
+        r.push(levenshtein(a, b));
+    }
+
+    r
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
