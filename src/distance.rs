@@ -10,7 +10,7 @@ use std::cmp::{min};
 ///
 /// assert_eq!(3, levenshtein("kitten", "sitting"));
 /// assert_eq!(2, levenshtein("pute", "puit"));
-/// assert_eq!(50, (levenshtein("puit", "pute") / "puit".len()));
+/// assert_eq!(0.5, 1.0 - ((levenshtein("puit", "pute") as f32) / ("puit".len() as f32)));
 ///
 /// ```
 pub fn levenshtein(a: &str, b: &str) -> usize {
