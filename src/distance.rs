@@ -4,7 +4,10 @@ use std::cmp::{min, max};
 /// (higher value means more similar).
 ///
 /// Examples:
+///
 /// ```
+/// use nlp::distance::jaro;
+///
 /// assert!((0.392 - jaro("Friedrich Nietzsche", "Jean-Paul Sartre")).abs() < 0.001);
 /// ```
 pub fn jaro(a: &str, b: &str) -> f64 {
@@ -66,7 +69,10 @@ pub fn jaro(a: &str, b: &str) -> f64 {
 /// Like Jaro but gives a boost to strings that have a common prefix.
 ///
 /// Examples:
+///
 /// ```
+/// use nlp::distance::jaro_winkler;
+///
 /// assert!((0.911 - jaro_winkler("cheeseburger", "cheese fries")).abs() < 0.001);
 /// ```
 pub fn jaro_winkler(a: &str, b: &str) -> f64 {
@@ -132,7 +138,10 @@ pub fn levenshtein(a: &str, b: &str) -> usize {
 /// vector of corresponding values.
 ///
 /// Examples:
+///
 /// ```
+/// use nlp::distance::levenshtein_against_vec;
+///
 /// let v = vec!["test", "test1", "test12", "test123", "", "tset"];
 /// let result = levenshtein_against_vec("test", &v);
 /// let expect = vec![0, 1, 2, 3, 4, 2];
