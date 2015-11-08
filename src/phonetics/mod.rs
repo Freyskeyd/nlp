@@ -1,1 +1,2 @@
-mod soundex;
+/// Module soundex
+pub mod soundex;
