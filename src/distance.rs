@@ -4,12 +4,19 @@ use std::cmp::{min, max};
 /// (higher value means more similar).
 ///
 /// Examples:
+///
 /// ```
+/// use nlp::distance::jaro;
+///
 /// assert!((0.392 - jaro("Friedrich Nietzsche", "Jean-Paul Sartre")).abs() < 0.001);
 /// ```
 pub fn jaro(a: &str, b: &str) -> f64 {
-    if a == b { return 1.0; }
-    if a.len() == 0 || b.len() == 0 { return 0.0; }
+    if a == b {
+        return 1.0;
+    }
+    if a.len() == 0 || b.len() == 0 {
+        return 0.0;
+    }
 
     let search_range = max(0, (max(a.len(), b.len()) / 2) - 1);
 
@@ -23,13 +30,11 @@ pub fn jaro(a: &str, b: &str) -> f64 {
     let mut b_match_index = 0;
 
     for (i, a_char) in a.chars().enumerate() {
-        let min_bound =
-            // prevent integer wrapping
-            if i > search_range {
-                max(0, i - search_range)
-            } else {
-                0
-            };
+        let min_bound = if i > search_range {
+            max(0, i - search_range)
+        } else {
+            0
+        };
 
         let max_bound = min(b.len() - 1, i + search_range);
 
@@ -38,18 +43,16 @@ pub fn jaro(a: &str, b: &str) -> f64 {
         }
 
         for (j, b_char) in b.chars().enumerate() {
-            if min_bound <= j && j <= max_bound {
-                if a_char == b_char && !b_consumed[j] {
-                    b_consumed[j] = true;
-                    matches += 1.0;
+            if (min_bound <= j && j <= max_bound) && (a_char == b_char && !b_consumed[j]) {
+                b_consumed[j] = true;
+                matches += 1.0;
 
-                    if j < b_match_index {
-                        transpositions += 1.0;
-                    }
-
-                    b_match_index = j;
-                    break;
+                if j < b_match_index {
+                    transpositions += 1.0;
                 }
+
+                b_match_index = j;
+                break;
             }
         }
     }
@@ -57,27 +60,31 @@ pub fn jaro(a: &str, b: &str) -> f64 {
     if matches == 0.0 {
         0.0
     } else {
-        (1.0 / 3.0) * ((matches / a.len() as f64) +
-                       (matches / b.len() as f64) +
-                       ((matches - transpositions) / matches))
+        (1.0 / 3.0) *
+        ((matches / a.len() as f64) + (matches / b.len() as f64) +
+         ((matches - transpositions) / matches))
     }
 }
 
 /// Like Jaro but gives a boost to strings that have a common prefix.
 ///
 /// Examples:
+///
 /// ```
+/// use nlp::distance::jaro_winkler;
+///
 /// assert!((0.911 - jaro_winkler("cheeseburger", "cheese fries")).abs() < 0.001);
 /// ```
 pub fn jaro_winkler(a: &str, b: &str) -> f64 {
     let jaro_distance = jaro(a, b);
 
     let prefrix_length = a.chars()
-        .zip(b.chars())
-        .take_while(|&(a_char, b_char)| a_char == b_char)
-        .count();
+                          .zip(b.chars())
+                          .take_while(|&(a_char, b_char)| a_char == b_char)
+                          .count();
 
-    let jaro_winkler_distance = jaro_distance + (0.1 * prefrix_length as f64 * (1.0 - jaro_distance));
+    let jaro_winkler_distance = jaro_distance +
+                                (0.1 * prefrix_length as f64 * (1.0 - jaro_distance));
 
     if jaro_winkler_distance <= 1.0 {
         jaro_winkler_distance
@@ -100,9 +107,13 @@ pub fn jaro_winkler(a: &str, b: &str) -> f64 {
 ///
 /// ```
 pub fn levenshtein(a: &str, b: &str) -> usize {
-    if a == b { return 0; }
-    else if a.len() == 0 { return b.len(); }
-    else if b.len() == 0 { return a.len(); }
+    if a == b {
+        return 0;
+    } else if a.len() == 0 {
+        return b.len();
+    } else if b.len() == 0 {
+        return a.len();
+    }
 
     let mut prev_distances: Vec<usize> = Vec::with_capacity(b.len() + 1);
     let mut curr_distances: Vec<usize> = Vec::with_capacity(b.len() + 1);
@@ -116,10 +127,13 @@ pub fn levenshtein(a: &str, b: &str) -> usize {
         curr_distances[0] = i + 1;
 
         for (j, b_char) in b.chars().enumerate() {
-            let cost = if a_char == b_char { 0 } else { 1 };
+            let cost = if a_char == b_char {
+                0
+            } else {
+                1
+            };
             curr_distances[j + 1] = min(curr_distances[j] + 1,
-                                        min(prev_distances[j + 1] +1,
-                                            prev_distances[j] + cost));
+                                        min(prev_distances[j + 1] + 1, prev_distances[j] + cost));
         }
 
         prev_distances.clone_from(&curr_distances);
@@ -132,13 +146,16 @@ pub fn levenshtein(a: &str, b: &str) -> usize {
 /// vector of corresponding values.
 ///
 /// Examples:
+///
 /// ```
+/// use nlp::distance::levenshtein_against_vec;
+///
 /// let v = vec!["test", "test1", "test12", "test123", "", "tset"];
 /// let result = levenshtein_against_vec("test", &v);
 /// let expect = vec![0, 1, 2, 3, 4, 2];
 /// assert_eq!(expect, result);
 /// ```
-pub fn levenshtein_against_vec(a: &str, v: &Vec<&str>) -> Vec<usize> {
+pub fn levenshtein_against_vec(a: &str, v: &[&str]) -> Vec<usize> {
     let mut r: Vec<usize> = Vec::with_capacity(v.len());
     for b in v.iter() {
         r.push(levenshtein(a, b));
@@ -191,22 +208,22 @@ mod tests {
     // Jaro
     #[test]
     fn jaro_empty_string() {
-        assert_eq!(1.0, jaro("",""))
+        assert!((1.0 - jaro("", "")).abs() < 0.001)
     }
 
     #[test]
     fn jaro_first_empty() {
-        assert_eq!(0.0, jaro("", "jaro"))
+        assert!((0.0 - jaro("", "jaro")).abs() < 0.001)
     }
 
     #[test]
     fn jaro_second_empty() {
-        assert_eq!(0.0, jaro("distance", ""))
+        assert!((0.0 - jaro("distance", "")).abs() < 0.001)
     }
 
     #[test]
     fn jaro_same() {
-        assert_eq!(1.0, jaro("jaro", "jaro"))
+        assert!((1.0 - jaro("jaro", "jaro")).abs() < 0.001);
     }
 
     #[test]
@@ -221,7 +238,6 @@ mod tests {
 
     #[test]
     fn jaro_diff_with_transposition() {
-        assert!((0.392 - jaro("Friedrich Nietzsche",
-                              "Jean-Paul Sartre")).abs() < 0.001)
+        assert!((0.392 - jaro("Friedrich Nietzsche", "Jean-Paul Sartre")).abs() < 0.001)
     }
 }
