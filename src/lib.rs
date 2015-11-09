@@ -12,6 +12,8 @@
 #![doc="Natural language processing library"]
 
 
+#[macro_use] extern crate itertools;
+
 /// Distance module (Levenshtein, Jaro, Jaro-winkler)
 pub mod distance;
 
