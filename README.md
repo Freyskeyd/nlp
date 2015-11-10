@@ -11,7 +11,7 @@ Rust-nlp
 - [x] Jaro / Jaro-Winkler ([Explanation](https://fr.wikipedia.org/wiki/Distance_de_Jaro-Winkler))
 
 ### Phonetics
-- [ ] Soundex ([Explanation](https://en.wikipedia.org/wiki/Soundex))
+- [x] Soundex ([Explanation](https://en.wikipedia.org/wiki/Soundex))
 - [ ] Metaphone ([Explanation](https://en.wikipedia.org/wiki/Metaphone))
 - [ ] Double-metaphone ([Explanation](https://en.wikipedia.org/wiki/Metaphone#Double_Metaphone))
 - [ ] Caverphone ([Explanation](https://en.wikipedia.org/wiki/Caverphone))

@@ -8,4 +8,5 @@ default = []
 dev = ["clippy"]
 
 [dependencies]
+itertools = "0.4.3"
 clippy = { version = "*", optional = true }
