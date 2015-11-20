@@ -10,11 +10,13 @@ use std::cmp::{min, max};
 ///
 /// assert!((0.392 - jaro("Friedrich Nietzsche", "Jean-Paul Sartre")).abs() < 0.001);
 /// ```
-pub fn jaro(a: &str, b: &str) -> f64 {
+pub fn jaro<T:ToString + ?Sized>(a: &T, b: &T) -> f64 {
+    let a = a.to_string();
+    let b = b.to_string();
     if a == b {
         return 1.0;
     }
-    if a.len() == 0 || b.len() == 0 {
+    if a.is_empty() || b.is_empty() {
         return 0.0;
     }
 
@@ -75,8 +77,10 @@ pub fn jaro(a: &str, b: &str) -> f64 {
 ///
 /// assert!((0.911 - jaro_winkler("cheeseburger", "cheese fries")).abs() < 0.001);
 /// ```
-pub fn jaro_winkler(a: &str, b: &str) -> f64 {
-    let jaro_distance = jaro(a, b);
+pub fn jaro_winkler<T:ToString + ?Sized>(a: &T, b: &T) -> f64 {
+    let a = a.to_string();
+    let b = b.to_string();
+    let jaro_distance = jaro(&a, &b);
 
     let prefrix_length = a.chars()
                           .zip(b.chars())
@@ -106,12 +110,15 @@ pub fn jaro_winkler(a: &str, b: &str) -> f64 {
 /// assert_eq!(0.5, 1.0 - ((levenshtein("puit", "pute") as f32) / ("puit".len() as f32)));
 ///
 /// ```
-pub fn levenshtein(a: &str, b: &str) -> usize {
+pub fn levenshtein<T:ToString + ?Sized>(a: &T, b: &T) -> usize {
+    let a = a.to_string();
+    let b = b.to_string();
+
     if a == b {
         return 0;
-    } else if a.len() == 0 {
+    } else if a.is_empty() {
         return b.len();
-    } else if b.len() == 0 {
+    } else if b.is_empty() {
         return a.len();
     }
 
@@ -155,7 +162,7 @@ pub fn levenshtein(a: &str, b: &str) -> usize {
 /// let expect = vec![0, 1, 2, 3, 4, 2];
 /// assert_eq!(expect, result);
 /// ```
-pub fn levenshtein_against_vec(a: &str, v: &[&str]) -> Vec<usize> {
+pub fn levenshtein_against_vec<T: ToString + ?Sized>(a: &T, v: &[&T]) -> Vec<usize> {
     let mut r: Vec<usize> = Vec::with_capacity(v.len());
     for b in v.iter() {
         r.push(levenshtein(a, b));
@@ -170,7 +177,9 @@ mod tests {
 
     #[test]
     fn levenshtein_empty_string() {
-        assert_eq!(0, levenshtein("", ""))
+        assert_eq!(0, levenshtein("", ""));
+        let test: String = "hey".to_owned();
+        assert_eq!(0, levenshtein(&test, &test))
     }
 
     #[test]
@@ -239,5 +248,21 @@ mod tests {
     #[test]
     fn jaro_diff_with_transposition() {
         assert!((0.392 - jaro("Friedrich Nietzsche", "Jean-Paul Sartre")).abs() < 0.001)
+    }
+
+    #[test]
+    fn jaro_1() {
+        assert!((0.392 - jaro(&"Friedrich Nietzsche".to_owned(), &"Jean-Paul Sartre".to_owned())).abs() < 0.001)
+    }
+    #[test]
+    fn levenshtein_only_strings() {
+        let vec: Vec<String> = vec!["test".to_owned(), "bibi".to_owned()];
+
+        let mut vv: Vec<&String> = Vec::new();
+        for v in &vec {
+            vv.push(&v);
+        }
+        let test = "test".to_owned();
+        assert_eq!(levenshtein_against_vec(&test, &vv[..]), [0, 4])
     }
 }
