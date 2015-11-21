@@ -12,7 +12,7 @@ Rust-nlp
 
 ### Phonetics
 - [x] Soundex ([Explanation](https://en.wikipedia.org/wiki/Soundex))
-- [ ] Metaphone ([Explanation](https://en.wikipedia.org/wiki/Metaphone))
+- [x] Metaphone ([Explanation](https://en.wikipedia.org/wiki/Metaphone))
 - [ ] Double-metaphone ([Explanation](https://en.wikipedia.org/wiki/Metaphone#Double_Metaphone))
 - [ ] Caverphone ([Explanation](https://en.wikipedia.org/wiki/Caverphone))
 - [ ] Beider–Morse Phonetic ([Explanation](https://en.wikipedia.org/wiki/Daitch%E2%80%93Mokotoff_Soundex#Beider.E2.80.93Morse_Phonetic_Name_Matching_Algorithm))

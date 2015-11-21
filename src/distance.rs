@@ -110,15 +110,12 @@ pub fn jaro_winkler<T:ToString + ?Sized>(a: &T, b: &T) -> f64 {
 /// assert_eq!(0.5, 1.0 - ((levenshtein("puit", "pute") as f32) / ("puit".len() as f32)));
 ///
 /// ```
-pub fn levenshtein<T:ToString + ?Sized>(a: &T, b: &T) -> usize {
-    let a = a.to_string();
-    let b = b.to_string();
-
+pub fn levenshtein(a: &str, b: &str) -> usize {
     if a == b {
         return 0;
-    } else if a.is_empty() {
+    } else if a.len() == 0 {
         return b.len();
-    } else if b.is_empty() {
+    } else if b.len() == 0 {
         return a.len();
     }
 
@@ -162,7 +159,7 @@ pub fn levenshtein<T:ToString + ?Sized>(a: &T, b: &T) -> usize {
 /// let expect = vec![0, 1, 2, 3, 4, 2];
 /// assert_eq!(expect, result);
 /// ```
-pub fn levenshtein_against_vec<T: ToString + ?Sized>(a: &T, v: &[&T]) -> Vec<usize> {
+pub fn levenshtein_against_vec(a: &str, v: &[&str]) -> Vec<usize> {
     let mut r: Vec<usize> = Vec::with_capacity(v.len());
     for b in v.iter() {
         r.push(levenshtein(a, b));
@@ -256,13 +253,20 @@ mod tests {
     }
     #[test]
     fn levenshtein_only_strings() {
-        let vec: Vec<String> = vec!["test".to_owned(), "bibi".to_owned()];
+        let vec = vec!["test", "bibi"];
 
-        let mut vv: Vec<&String> = Vec::new();
-        for v in &vec {
-            vv.push(&v);
-        }
+        // let mut vv: Vec<&String> = Vec::new();
+        // for v in &vec {
+        //     vv.push(&v);
+        // }
         let test = "test".to_owned();
-        assert_eq!(levenshtein_against_vec(&test, &vv[..]), [0, 4])
+        assert_eq!(levenshtein_against_vec(&test, &vec), [0, 4])
     }
+
+    #[test]
+    fn levenshtein_string_1() {
+        let bibi = "bisous".to_owned();
+        levenshtein("test", &bibi);
+    }
+
 }
