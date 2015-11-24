@@ -127,10 +127,12 @@ pub fn levenshtein(a: &str, b: &str) -> usize {
         curr_distances.push(0);
     }
 
+    println!("================================== {} {}", a, b);
     for (i, a_char) in a.chars().enumerate() {
         curr_distances[0] = i + 1;
 
         for (j, b_char) in b.chars().enumerate() {
+
             let cost = if a_char == b_char {
                 0
             } else {
@@ -138,8 +140,10 @@ pub fn levenshtein(a: &str, b: &str) -> usize {
             };
             curr_distances[j + 1] = min(curr_distances[j] + 1,
                                         min(prev_distances[j + 1] + 1, prev_distances[j] + cost));
+            println!("{:?}", curr_distances);
         }
 
+        println!("prev become: {:?}", prev_distances);
         prev_distances.clone_from(&curr_distances);
     }
 

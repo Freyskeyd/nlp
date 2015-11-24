@@ -17,5 +17,7 @@
 /// Distance module (Levenshtein, Jaro, Jaro-winkler)
 pub mod distance;
 
+// pub mod tokenize;
+
 /// Phonetics module (Soundex)
 pub mod phonetics;
