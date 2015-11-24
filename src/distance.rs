@@ -130,10 +130,12 @@ pub fn levenshtein<T:ToString + ?Sized>(a: &T, b: &T) -> usize {
         curr_distances.push(0);
     }
 
+    println!("================================== {} {}", a, b);
     for (i, a_char) in a.chars().enumerate() {
         curr_distances[0] = i + 1;
 
         for (j, b_char) in b.chars().enumerate() {
+
             let cost = if a_char == b_char {
                 0
             } else {
@@ -141,8 +143,10 @@ pub fn levenshtein<T:ToString + ?Sized>(a: &T, b: &T) -> usize {
             };
             curr_distances[j + 1] = min(curr_distances[j] + 1,
                                         min(prev_distances[j + 1] + 1, prev_distances[j] + cost));
+            println!("{:?}", curr_distances);
         }
 
+        println!("prev become: {:?}", prev_distances);
         prev_distances.clone_from(&curr_distances);
     }
 
@@ -170,105 +174,99 @@ pub fn levenshtein_against_vec<T: ToString + ?Sized>(a: &T, v: &[&T]) -> Vec<usi
 
     r
 }
+// #[cfg(test)]
+// mod tests {
+//     use super::*;
 
-#[cfg(test)]
-mod tests {
-    use super::*;
+//     #[test]
+//     fn levenshtein_empty_string() {
+//         assert_eq!(0, levenshtein("", ""));
+//         let test: String = "hey".to_owned();
+//         assert_eq!(0, levenshtein(&test, &test))
+//     }
 
-    #[test]
-    fn levenshtein_empty_string() {
-        assert_eq!(0, levenshtein("", ""));
-        let test: String = "hey".to_owned();
-        assert_eq!(0, levenshtein(&test, &test))
-    }
+//     #[test]
+//     fn levenshtein_same_string() {
+//         assert_eq!(0, levenshtein("kitten", "kitten"))
+//     }
 
-    #[test]
-    fn levenshtein_same_string() {
-        assert_eq!(0, levenshtein("kitten", "kitten"))
-    }
+//     #[test]
+//     fn levenshtein_diff_short_string() {
+//         assert_eq!(3, levenshtein("kitten", "sitting"))
+//     }
 
-    #[test]
-    fn levenshtein_diff_short_string() {
-        assert_eq!(3, levenshtein("kitten", "sitting"))
-    }
+//     #[test]
+//     fn levenshtein_diff_spaced_sring() {
+//         assert_eq!(5, levenshtein("hello, world", "bye, world"))
+//     }
 
-    #[test]
-    fn levenshtein_diff_spaced_sring() {
-        assert_eq!(5, levenshtein("hello, world", "bye, world"))
-    }
+//     #[test]
+//     fn levenshtein_diff_long_string() {
+//         let a = "The quick brown fox jumped over the angry dog.";
+//         let b = "Lorem ipsum dolor sit amet, dicta latine an eam.";
+//         assert_eq!(37, levenshtein(a, b))
+//     }
 
-    #[test]
-    fn levenshtein_diff_long_string() {
-        let a = "The quick brown fox jumped over the angry dog.";
-        let b = "Lorem ipsum dolor sit amet, dicta latine an eam.";
-        assert_eq!(37, levenshtein(a, b))
-    }
+//     #[test]
+//     fn levenshtein_first_empty() {
+//         assert_eq!(7, levenshtein("", "sitting"))
+//     }
 
-    #[test]
-    fn levenshtein_first_empty() {
-        assert_eq!(7, levenshtein("", "sitting"))
-    }
+//     #[test]
+//     fn levenshtein_second_empty() {
+//         assert_eq!(6, levenshtein("kitten", ""))
+//     }
 
-    #[test]
-    fn levenshtein_second_empty() {
-        assert_eq!(6, levenshtein("kitten", ""))
-    }
+//     // Jaro
+//     #[test]
+//     fn jaro_empty_string() {
+//         assert!((1.0 - jaro("", "")).abs() < 0.001)
+//     }
 
-    // Jaro
-    #[test]
-    fn jaro_empty_string() {
-        assert!((1.0 - jaro("", "")).abs() < 0.001)
-    }
+//     #[test]
+//     fn jaro_first_empty() {
+//         assert!((0.0 - jaro("", "jaro")).abs() < 0.001)
+//     }
 
-    #[test]
-    fn jaro_first_empty() {
-        assert!((0.0 - jaro("", "jaro")).abs() < 0.001)
-    }
+//     #[test]
+//     fn jaro_second_empty() {
+//         assert!((0.0 - jaro("distance", "")).abs() < 0.001)
+//     }
 
-    #[test]
-    fn jaro_second_empty() {
-        assert!((0.0 - jaro("distance", "")).abs() < 0.001)
-    }
+//     #[test]
+//     fn jaro_same() {
+//         assert!((1.0 - jaro("jaro", "jaro")).abs() < 0.001);
+//     }
 
-    #[test]
-    fn jaro_same() {
-        assert!((1.0 - jaro("jaro", "jaro")).abs() < 0.001);
-    }
+//     #[test]
+//     fn jaro_diff_short() {
+//         assert!((0.767 - jaro("dixon", "dicksonx")).abs() < 0.001)
+//     }
 
-    #[test]
-    fn jaro_diff_short() {
-        assert!((0.767 - jaro("dixon", "dicksonx")).abs() < 0.001)
-    }
+//     #[test]
+//     fn jaro_diff_no_transposition() {
+//         assert!((0.944 - jaro("martha", "marhta")).abs() < 0.001)
+//     }
 
-    #[test]
-    fn jaro_diff_no_transposition() {
-        assert!((0.944 - jaro("martha", "marhta")).abs() < 0.001)
-    }
+//     #[test]
+//     fn jaro_diff_with_transposition() {
+//         assert!((0.392 - jaro("Friedrich Nietzsche", "Jean-Paul Sartre")).abs() < 0.001)
+//     }
 
-    #[test]
-    fn jaro_diff_with_transposition() {
-        assert!((0.392 - jaro("Friedrich Nietzsche", "Jean-Paul Sartre")).abs() < 0.001)
-    }
+//     #[test]
+//     fn jaro_1() {
+//         assert!((0.392 - jaro(&"Friedrich Nietzsche".to_owned(), &"Jean-Paul Sartre".to_owned())).abs() < 0.001)
+//     }
 
-    #[test]
-    fn jaro_1() {
-        assert!((0.392 - jaro(&"Friedrich Nietzsche".to_owned(), &"Jean-Paul Sartre".to_owned())).abs() < 0.001)
-    }
-    #[test]
-    fn levenshtein_only_strings() {
-        let vec: Vec<String> = vec!["test".to_owned(), "bibi".to_owned()];
+//     #[test]
+//     fn levenshtein_only_strings() {
+//         let vec: Vec<String> = vec!["test".to_owned(), "bibi".to_owned()];
 
-        let mut vv: Vec<&String> = Vec::new();
-        for v in &vec {
-            vv.push(&v);
-        }
-        let test = "test".to_owned();
-        assert_eq!(levenshtein_against_vec(&test, &vv[..]), [0, 4])
-    }
-
-    #[test]
-    fn levenshtein_string_1() {
-        let bibi = "bisous".to_owned();
-        levenshtein("test", &bibi);
-    }
-}
+//         let mut vv: Vec<&String> = Vec::new();
+//         for v in &vec {
+//             vv.push(&v);
+//         }
+//         let test = "test".to_owned();
+//         assert_eq!(levenshtein_against_vec(&test, &vv[..]), [0, 4])
+//     }
+// }
