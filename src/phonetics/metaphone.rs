@@ -48,7 +48,6 @@ pub fn metaphone<T:ToString + ?Sized>(word: &T) -> String {
         _                          => local.push_str(&upper_word)
     }
 
-    println!("{}", local.to_string().len());
     let local_size = local.len();
 
     let mut code = String::new();
@@ -58,7 +57,7 @@ pub fn metaphone<T:ToString + ?Sized>(word: &T) -> String {
         let char_at = local.chars().clone().nth(n).unwrap_or('_');
         let char_next = local.chars().clone().nth(n + 1).unwrap_or('_');
 
-        println!("code_len: {}, n: {}, char_at: {}, char_next: {}", code.len(), n, char_at, char_next);
+        // println!("code_len: {}, n: {}, char_at: {}, char_next: {}", code.len(), n, char_at, char_next);
         if char_at != 'C' && is_previous_char(&local, n, char_at) {
             n += 1;
         } else {
