@@ -248,3 +248,8 @@ fn metaphone_many_13() {
 fn metaphone_11() {
     assert_eq!(metaphone("dacite"), "TST")
 }
+
+#[test]
+fn metaphone_12() {
+    assert_eq!(metaphone("éréction"), "TST")
+}

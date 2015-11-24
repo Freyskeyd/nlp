@@ -28,6 +28,7 @@ pub fn metaphone<T:ToString + ?Sized>(word: &T) -> String {
         .chars()
         .collect::<Vec<_>>();
 
+    // println!("{:?}", word_char);
     let mut local = String::new();
 
     let action_when_second_letter_match = |string: &mut String, letter: char| {
@@ -47,17 +48,17 @@ pub fn metaphone<T:ToString + ?Sized>(word: &T) -> String {
         _                          => local.push_str(&upper_word)
     }
 
+    println!("{}", local.to_string().len());
     let local_size = local.len();
 
     let mut code = String::new();
 
     let mut n = 0;
-// println!("{:?}", local);
     while (code.len() < MAX_LEN) && n < local_size {
         let char_at = local.chars().clone().nth(n).unwrap_or('_');
         let char_next = local.chars().clone().nth(n + 1).unwrap_or('_');
 
-        // println!("code_len: {}, n: {}, char_at: {}, char_next: {}", code.len(), n, char_at, char_next);
+        println!("code_len: {}, n: {}, char_at: {}, char_next: {}", code.len(), n, char_at, char_next);
         if char_at != 'C' && is_previous_char(&local, n, char_at) {
             n += 1;
         } else {
@@ -89,8 +90,11 @@ pub fn metaphone<T:ToString + ?Sized>(word: &T) -> String {
                 'W' | 'Y' if !is_last_char(local_size, n) && is_vowel(&local, n + 1)                                                          => code.push(char_at),
                 'X'                                                                                                                           => {code.push('K'); code.push('S');},
                 'Z'                                                                                                                           => code.push('S'),
+                '_' => {
+                    break;
+                }
                 _ => ()
-            }
+            };
             n += 1;
         }
     }

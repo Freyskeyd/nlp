@@ -265,4 +265,10 @@ mod tests {
         let test = "test".to_owned();
         assert_eq!(levenshtein_against_vec(&test, &vv[..]), [0, 4])
     }
+
+    #[test]
+    fn levenshtein_string_1() {
+        let bibi = "bisous".to_owned();
+        levenshtein("test", &bibi);
+    }
 }
