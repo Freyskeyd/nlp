@@ -1,4 +1,6 @@
 use std::cmp::{min, max};
+use std::iter::repeat;
+use std::ptr;
 
 /// Calculates the Jaro similarity between two strings. The returned value is between 0.0 and 1.0
 /// (higher value means more similar).
@@ -10,22 +12,17 @@ use std::cmp::{min, max};
 ///
 /// assert!((0.392 - jaro("Friedrich Nietzsche", "Jean-Paul Sartre")).abs() < 0.001);
 /// ```
-pub fn jaro<T:ToString + ?Sized>(a: &T, b: &T) -> f64 {
-    let a = a.to_string();
-    let b = b.to_string();
+pub fn jaro(a: &str, b: &str) -> f64 {
     if a == b {
         return 1.0;
     }
-    if a.is_empty() || b.is_empty() {
+    if a.len() == 0 || b.len() == 0 {
         return 0.0;
     }
 
     let search_range = max(0, (max(a.len(), b.len()) / 2) - 1);
 
-    let mut b_consumed = Vec::with_capacity(b.len());
-    for _ in 0..b.len() {
-        b_consumed.push(false);
-    }
+    let mut b_consumed: Vec<bool> = repeat(false).take(b.len()).collect::<Vec<bool>>();
 
     let mut matches = 0.0;
     let mut transpositions = 0.0;
@@ -119,35 +116,30 @@ pub fn levenshtein(a: &str, b: &str) -> usize {
         return a.len();
     }
 
-    let mut prev_distances: Vec<usize> = Vec::with_capacity(b.len() + 1);
-    let mut curr_distances: Vec<usize> = Vec::with_capacity(b.len() + 1);
+    let mut prev_distances: Vec<u16> = (0..(b.len() as u16 + 1)).collect::<Vec<u16>>();
+    let mut curr_distances: Vec<u16> = repeat(0).take(b.len()+1).collect::<Vec<u16>>();
 
-    for i in 0..(b.len() + 1) {
-        prev_distances.push(i);
-        curr_distances.push(0);
-    }
-
-    println!("================================== {} {}", a, b);
     for (i, a_char) in a.chars().enumerate() {
-        curr_distances[0] = i + 1;
+        curr_distances[0] = i as u16 + 1;
 
         for (j, b_char) in b.chars().enumerate() {
-
             let cost = if a_char == b_char {
                 0
             } else {
                 1
             };
-            curr_distances[j + 1] = min(curr_distances[j] + 1,
+
+            curr_distances[j + 1]  = min(curr_distances[j] + 1,
                                         min(prev_distances[j + 1] + 1, prev_distances[j] + cost));
-            println!("{:?}", curr_distances);
         }
 
-        println!("prev become: {:?}", prev_distances);
-        prev_distances.clone_from(&curr_distances);
+        unsafe {
+            let slice_ptr = (&curr_distances[..]).as_ptr();
+            ptr::copy(slice_ptr, prev_distances.as_mut_ptr(), prev_distances.len());
+        }
     }
 
-    curr_distances[b.len()]
+    curr_distances[b.len()] as usize
 }
 
 /// Calculates the levenshtein distance between a string and each string in a vector. Returns a
@@ -237,6 +229,11 @@ mod tests {
     }
 
     #[test]
+    fn jaro_2() {
+       assert!( (100.0 * jaro("FUCK", "FUKC").abs()) > 90.0 );
+    }
+
+    #[test]
     fn jaro_diff_short() {
         assert!((0.767 - jaro("dixon", "dicksonx")).abs() < 0.001)
     }
@@ -255,22 +252,16 @@ mod tests {
     fn jaro_1() {
         assert!((0.392 - jaro(&"Friedrich Nietzsche".to_owned(), &"Jean-Paul Sartre".to_owned())).abs() < 0.001)
     }
+
     #[test]
     fn levenshtein_only_strings() {
-        let vec = vec!["test", "bibi"];
+        let vec: Vec<String> = vec!["test".to_owned(), "bibi".to_owned()];
 
-        // let mut vv: Vec<&String> = Vec::new();
-        // for v in &vec {
-        //     vv.push(&v);
-        // }
+        let mut vv: Vec<&str> = Vec::new();
+        for v in &vec {
+            vv.push(&v);
+        }
         let test = "test".to_owned();
-        assert_eq!(levenshtein_against_vec(&test, &vec), [0, 4])
+        assert_eq!(levenshtein_against_vec(&test, &vv[..]), [0, 4])
     }
-
-    #[test]
-    fn levenshtein_string_1() {
-        let bibi = "bisous".to_owned();
-        levenshtein("test", &bibi);
-    }
-
 }
