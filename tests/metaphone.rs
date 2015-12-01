@@ -251,5 +251,5 @@ fn metaphone_11() {
 
 #[test]
 fn metaphone_12() {
-    assert_eq!(metaphone("éréction"), "TST")
+    assert_eq!(metaphone("éréction"), "RKXN")
 }

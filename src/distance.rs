@@ -1,4 +1,6 @@
 use std::cmp::{min, max};
+use std::iter::repeat;
+use std::ptr;
 
 /// Calculates the Jaro similarity between two strings. The returned value is between 0.0 and 1.0
 /// (higher value means more similar).
@@ -10,22 +12,17 @@ use std::cmp::{min, max};
 ///
 /// assert!((0.392 - jaro("Friedrich Nietzsche", "Jean-Paul Sartre")).abs() < 0.001);
 /// ```
-pub fn jaro<T:ToString + ?Sized>(a: &T, b: &T) -> f64 {
-    let a = a.to_string();
-    let b = b.to_string();
+pub fn jaro(a: &str, b: &str) -> f64 {
     if a == b {
         return 1.0;
     }
-    if a.is_empty() || b.is_empty() {
+    if a.len() == 0 || b.len() == 0 {
         return 0.0;
     }
 
     let search_range = max(0, (max(a.len(), b.len()) / 2) - 1);
 
-    let mut b_consumed = Vec::with_capacity(b.len());
-    for _ in 0..b.len() {
-        b_consumed.push(false);
-    }
+    let mut b_consumed: Vec<bool> = repeat(false).take(b.len()).collect::<Vec<bool>>();
 
     let mut matches = 0.0;
     let mut transpositions = 0.0;
@@ -110,47 +107,39 @@ pub fn jaro_winkler<T:ToString + ?Sized>(a: &T, b: &T) -> f64 {
 /// assert_eq!(0.5, 1.0 - ((levenshtein("puit", "pute") as f32) / ("puit".len() as f32)));
 ///
 /// ```
-pub fn levenshtein<T:ToString + ?Sized>(a: &T, b: &T) -> usize {
-    let a = a.to_string();
-    let b = b.to_string();
-
+pub fn levenshtein(a: &str, b: &str) -> usize {
     if a == b {
         return 0;
-    } else if a.is_empty() {
+    } else if a.len() == 0 {
         return b.len();
-    } else if b.is_empty() {
+    } else if b.len() == 0 {
         return a.len();
     }
 
-    let mut prev_distances: Vec<usize> = Vec::with_capacity(b.len() + 1);
-    let mut curr_distances: Vec<usize> = Vec::with_capacity(b.len() + 1);
+    let mut prev_distances: Vec<u16> = (0..(b.len() as u16 + 1)).collect::<Vec<u16>>();
+    let mut curr_distances: Vec<u16> = repeat(0).take(b.len()+1).collect::<Vec<u16>>();
 
-    for i in 0..(b.len() + 1) {
-        prev_distances.push(i);
-        curr_distances.push(0);
-    }
-
-    println!("================================== {} {}", a, b);
     for (i, a_char) in a.chars().enumerate() {
-        curr_distances[0] = i + 1;
+        curr_distances[0] = i as u16 + 1;
 
         for (j, b_char) in b.chars().enumerate() {
-
             let cost = if a_char == b_char {
                 0
             } else {
                 1
             };
-            curr_distances[j + 1] = min(curr_distances[j] + 1,
+
+            curr_distances[j + 1]  = min(curr_distances[j] + 1,
                                         min(prev_distances[j + 1] + 1, prev_distances[j] + cost));
-            println!("{:?}", curr_distances);
         }
 
-        println!("prev become: {:?}", prev_distances);
-        prev_distances.clone_from(&curr_distances);
+        unsafe {
+            let slice_ptr = (&curr_distances[..]).as_ptr();
+            ptr::copy(slice_ptr, prev_distances.as_mut_ptr(), prev_distances.len());
+        }
     }
 
-    curr_distances[b.len()]
+    curr_distances[b.len()] as usize
 }
 
 /// Calculates the levenshtein distance between a string and each string in a vector. Returns a
@@ -166,7 +155,7 @@ pub fn levenshtein<T:ToString + ?Sized>(a: &T, b: &T) -> usize {
 /// let expect = vec![0, 1, 2, 3, 4, 2];
 /// assert_eq!(expect, result);
 /// ```
-pub fn levenshtein_against_vec<T: ToString + ?Sized>(a: &T, v: &[&T]) -> Vec<usize> {
+pub fn levenshtein_against_vec(a: &str, v: &[&str]) -> Vec<usize> {
     let mut r: Vec<usize> = Vec::with_capacity(v.len());
     for b in v.iter() {
         r.push(levenshtein(a, b));
@@ -174,99 +163,104 @@ pub fn levenshtein_against_vec<T: ToString + ?Sized>(a: &T, v: &[&T]) -> Vec<usi
 
     r
 }
-// #[cfg(test)]
-// mod tests {
-//     use super::*;
+#[cfg(test)]
+mod tests {
+    use super::*;
 
-//     #[test]
-//     fn levenshtein_empty_string() {
-//         assert_eq!(0, levenshtein("", ""));
-//         let test: String = "hey".to_owned();
-//         assert_eq!(0, levenshtein(&test, &test))
-//     }
+    #[test]
+    fn levenshtein_empty_string() {
+        assert_eq!(0, levenshtein("", ""));
+        let test: String = "hey".to_owned();
+        assert_eq!(0, levenshtein(&test, &test))
+    }
 
-//     #[test]
-//     fn levenshtein_same_string() {
-//         assert_eq!(0, levenshtein("kitten", "kitten"))
-//     }
+    #[test]
+    fn levenshtein_same_string() {
+        assert_eq!(0, levenshtein("kitten", "kitten"))
+    }
 
-//     #[test]
-//     fn levenshtein_diff_short_string() {
-//         assert_eq!(3, levenshtein("kitten", "sitting"))
-//     }
+    #[test]
+    fn levenshtein_diff_short_string() {
+        assert_eq!(3, levenshtein("kitten", "sitting"))
+    }
 
-//     #[test]
-//     fn levenshtein_diff_spaced_sring() {
-//         assert_eq!(5, levenshtein("hello, world", "bye, world"))
-//     }
+    #[test]
+    fn levenshtein_diff_spaced_sring() {
+        assert_eq!(5, levenshtein("hello, world", "bye, world"))
+    }
 
-//     #[test]
-//     fn levenshtein_diff_long_string() {
-//         let a = "The quick brown fox jumped over the angry dog.";
-//         let b = "Lorem ipsum dolor sit amet, dicta latine an eam.";
-//         assert_eq!(37, levenshtein(a, b))
-//     }
+    #[test]
+    fn levenshtein_diff_long_string() {
+        let a = "The quick brown fox jumped over the angry dog.";
+        let b = "Lorem ipsum dolor sit amet, dicta latine an eam.";
+        assert_eq!(37, levenshtein(a, b))
+    }
 
-//     #[test]
-//     fn levenshtein_first_empty() {
-//         assert_eq!(7, levenshtein("", "sitting"))
-//     }
+    #[test]
+    fn levenshtein_first_empty() {
+        assert_eq!(7, levenshtein("", "sitting"))
+    }
 
-//     #[test]
-//     fn levenshtein_second_empty() {
-//         assert_eq!(6, levenshtein("kitten", ""))
-//     }
+    #[test]
+    fn levenshtein_second_empty() {
+        assert_eq!(6, levenshtein("kitten", ""))
+    }
 
-//     // Jaro
-//     #[test]
-//     fn jaro_empty_string() {
-//         assert!((1.0 - jaro("", "")).abs() < 0.001)
-//     }
+    // Jaro
+    #[test]
+    fn jaro_empty_string() {
+        assert!((1.0 - jaro("", "")).abs() < 0.001)
+    }
 
-//     #[test]
-//     fn jaro_first_empty() {
-//         assert!((0.0 - jaro("", "jaro")).abs() < 0.001)
-//     }
+    #[test]
+    fn jaro_first_empty() {
+        assert!((0.0 - jaro("", "jaro")).abs() < 0.001)
+    }
 
-//     #[test]
-//     fn jaro_second_empty() {
-//         assert!((0.0 - jaro("distance", "")).abs() < 0.001)
-//     }
+    #[test]
+    fn jaro_second_empty() {
+        assert!((0.0 - jaro("distance", "")).abs() < 0.001)
+    }
 
-//     #[test]
-//     fn jaro_same() {
-//         assert!((1.0 - jaro("jaro", "jaro")).abs() < 0.001);
-//     }
+    #[test]
+    fn jaro_same() {
+        assert!((1.0 - jaro("jaro", "jaro")).abs() < 0.001);
+    }
 
-//     #[test]
-//     fn jaro_diff_short() {
-//         assert!((0.767 - jaro("dixon", "dicksonx")).abs() < 0.001)
-//     }
+    #[test]
+    fn jaro_2() {
+       assert!( (100.0 * jaro("FUCK", "FUKC").abs()) > 90.0 );
+    }
 
-//     #[test]
-//     fn jaro_diff_no_transposition() {
-//         assert!((0.944 - jaro("martha", "marhta")).abs() < 0.001)
-//     }
+    #[test]
+    fn jaro_diff_short() {
+        assert!((0.767 - jaro("dixon", "dicksonx")).abs() < 0.001)
+    }
 
-//     #[test]
-//     fn jaro_diff_with_transposition() {
-//         assert!((0.392 - jaro("Friedrich Nietzsche", "Jean-Paul Sartre")).abs() < 0.001)
-//     }
+    #[test]
+    fn jaro_diff_no_transposition() {
+        assert!((0.944 - jaro("martha", "marhta")).abs() < 0.001)
+    }
 
-//     #[test]
-//     fn jaro_1() {
-//         assert!((0.392 - jaro(&"Friedrich Nietzsche".to_owned(), &"Jean-Paul Sartre".to_owned())).abs() < 0.001)
-//     }
+    #[test]
+    fn jaro_diff_with_transposition() {
+        assert!((0.392 - jaro("Friedrich Nietzsche", "Jean-Paul Sartre")).abs() < 0.001)
+    }
 
-//     #[test]
-//     fn levenshtein_only_strings() {
-//         let vec: Vec<String> = vec!["test".to_owned(), "bibi".to_owned()];
+    #[test]
+    fn jaro_1() {
+        assert!((0.392 - jaro(&"Friedrich Nietzsche".to_owned(), &"Jean-Paul Sartre".to_owned())).abs() < 0.001)
+    }
 
-//         let mut vv: Vec<&String> = Vec::new();
-//         for v in &vec {
-//             vv.push(&v);
-//         }
-//         let test = "test".to_owned();
-//         assert_eq!(levenshtein_against_vec(&test, &vv[..]), [0, 4])
-//     }
-// }
+    #[test]
+    fn levenshtein_only_strings() {
+        let vec: Vec<String> = vec!["test".to_owned(), "bibi".to_owned()];
+
+        let mut vv: Vec<&str> = Vec::new();
+        for v in &vec {
+            vv.push(&v);
+        }
+        let test = "test".to_owned();
+        assert_eq!(levenshtein_against_vec(&test, &vv[..]), [0, 4])
+    }
+}

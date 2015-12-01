@@ -15,13 +15,18 @@ fn bench_levenshtein(b: &mut Bencher) {
     b.iter(|| levenshtein("rubert", "rupert"));
 }
 
-// #[bench]
-// fn bench_levenshtein_fast(b: &mut Bencher) {
-//     b.iter(|| levenshtein_fast("rubert", "rupert"));
-// }
+#[bench]
+fn bench_jaro(b: &mut Bencher) {
+    b.iter(|| jaro("rubert", "rupert"));
+}
 
 #[bench]
-fn bench_levenshtein_fast_10K(b: &mut Bencher) {
+fn bench_jaro_winkler(b: &mut Bencher) {
+    b.iter(|| jaro_winkler("rubert", "rupert"));
+}
+
+#[bench]
+fn bench_levenshtein_fast_10_k(b: &mut Bencher) {
 
     let path = Path::new("words2.txt");
     let mut s = String::new();
@@ -32,6 +37,38 @@ fn bench_levenshtein_fast_10K(b: &mut Bencher) {
     b.iter(|| {
         for i in &wbyl {
             levenshtein("rubert", &i);
+        }
+    })
+}
+
+#[bench]
+fn bench_jaro_fast_10_k(b: &mut Bencher) {
+
+    let path = Path::new("words2.txt");
+    let mut s = String::new();
+    let mut file = File::open(&path).unwrap();
+    file.read_to_string(&mut s).unwrap();
+
+    let wbyl: Vec<String> = s.lines().map(|s| s.to_owned()).collect();
+    b.iter(|| {
+        for i in &wbyl {
+            jaro("rubert", &i);
+        }
+    })
+}
+
+#[bench]
+fn bench_jaro_winkler_fast_10_k(b: &mut Bencher) {
+
+    let path = Path::new("words2.txt");
+    let mut s = String::new();
+    let mut file = File::open(&path).unwrap();
+    file.read_to_string(&mut s).unwrap();
+
+    let wbyl: Vec<String> = s.lines().map(|s| s.to_owned()).collect();
+    b.iter(|| {
+        for i in &wbyl {
+            jaro_winkler("rubert", &i);
         }
     })
 }
