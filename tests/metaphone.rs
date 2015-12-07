@@ -1,5 +1,5 @@
 extern crate nlp;
-use nlp::phonetics::metaphone::*;
+use nlp::phonetics::metaphone::metaphone::*;
 
 #[test]
 fn metaphone_1() {
