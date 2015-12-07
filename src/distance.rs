@@ -10,7 +10,7 @@ use std::ptr;
 /// ```
 /// use nlp::distance::jaro;
 ///
-/// assert!((0.392 - jaro("Friedrich Nietzsche", "Jean-Paul Sartre")).abs() < 0.001);
+/// assert!((0.411 - jaro("Friedrich Nietzsche", "Jean-Paul Sartre")).abs() < 0.001);
 /// ```
 pub fn jaro(a: &str, b: &str) -> f64 {
     if a == b {
@@ -19,6 +19,9 @@ pub fn jaro(a: &str, b: &str) -> f64 {
     if a.len() == 0 || b.len() == 0 {
         return 0.0;
     }
+
+    let a = a.to_uppercase();
+    let b = b.to_uppercase();
 
     let search_range = max(0, (max(a.len(), b.len()) / 2) - 1);
 
@@ -231,6 +234,7 @@ mod tests {
     #[test]
     fn jaro_2() {
        assert!( (100.0 * jaro("FUCK", "FUKC").abs()) > 90.0 );
+       assert!( (100.0 * jaro("Fuck", "FUKC").abs()) > 90.0 );
     }
 
     #[test]
@@ -245,12 +249,12 @@ mod tests {
 
     #[test]
     fn jaro_diff_with_transposition() {
-        assert!((0.392 - jaro("Friedrich Nietzsche", "Jean-Paul Sartre")).abs() < 0.001)
+        assert!((0.411 - jaro("Friedrich Nietzsche", "Jean-Paul Sartre")).abs() < 0.001)
     }
 
     #[test]
     fn jaro_1() {
-        assert!((0.392 - jaro(&"Friedrich Nietzsche".to_owned(), &"Jean-Paul Sartre".to_owned())).abs() < 0.001)
+        assert!((0.411 - jaro(&"Friedrich Nietzsche".to_owned(), &"Jean-Paul Sartre".to_owned())).abs() < 0.001)
     }
 
     #[test]
