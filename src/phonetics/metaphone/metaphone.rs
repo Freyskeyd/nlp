@@ -1,15 +1,15 @@
-use std::fmt::Display;
 static FRONTV: &'static str = "EIY";
-static VOWELS: &'static str = "AEIOU";
 static VARSON: &'static str = "CSPTG";
 const MAX_LEN: usize = 10;
+
+use phonetics::utils::metaphone_utils::is_vowel_without_y as is_vowel;
 
 /// Try metaphone
 ///
 /// Examples:
 ///
 /// ```
-/// use nlp::phonetics::metaphone::metaphone;
+/// use nlp::phonetics::metaphone::metaphone::*;
 /// assert_eq!("SMN", metaphone("simon"));
 /// assert_eq!("S", metaphone("s"));
 /// ```
@@ -28,7 +28,7 @@ pub fn metaphone<T:ToString + ?Sized>(word: &T) -> String {
         .chars()
         .collect::<Vec<_>>();
 
-    // println!("{:?}", word_char);
+    println!("{:?}", word_char);
     let mut local = String::new();
 
     let action_when_second_letter_match = |string: &mut String, letter: char| {
@@ -57,7 +57,7 @@ pub fn metaphone<T:ToString + ?Sized>(word: &T) -> String {
         let char_at = local.chars().clone().nth(n).unwrap_or('_');
         let char_next = local.chars().clone().nth(n + 1).unwrap_or('_');
 
-        // println!("code_len: {}, n: {}, char_at: {}, char_next: {}", code.len(), n, char_at, char_next);
+        println!("code_len: {}, n: {}, char_at: {}, char_next: {}", code.len(), n, char_at, char_next);
         if char_at != 'C' && is_previous_char(&local, n, char_at) {
             n += 1;
         } else {
@@ -125,10 +125,6 @@ fn b_testing(local: &str, n: usize) -> bool {
 
 fn c_testing(local: &str, n: usize, char_next: char) -> bool {
     ! (is_previous_char(&local, n , 'S') && !is_last_char(local.len(), n) && FRONTV.contains(char_next))
-}
-
-fn is_vowel(local: &str, n: usize) -> bool {
-    VOWELS.contains(local.chars().nth(n).unwrap())
 }
 
 fn is_next_char(local: &str, n: usize, test: char) -> bool {
