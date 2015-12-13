@@ -502,7 +502,7 @@ pub fn handle_w(result: &mut DoubleMetaphoneResult, value: &String, index: usize
                 result.append('A');
             }
             index + 1
-        } else if (index == value.len() -1 && is_vowel(&value, index - 1)) || contains_at_least_one(&value, index - 1, 5, &["EWSKI", "EWSKY", "OWSKI", "OWSKY"]) || contains(&value, 0, 3, "SCH") {
+        } else if (index > 0 && index == value.len()-1 && is_vowel(&value, index - 1)) || (index > 0 && contains_at_least_one(&value, index - 1, 5, &["EWSKI", "EWSKY", "OWSKI", "OWSKY"])) || contains(&value, 0, 3, "SCH") {
             //-- Arnow should match Arnoff --//
             result.append_alternate('F');
             index + 1
