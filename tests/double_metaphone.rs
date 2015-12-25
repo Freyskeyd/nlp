@@ -1242,3 +1242,8 @@ fn double_metaphone_on_dict() {
 
         })
 }
+
+#[test]
+fn handles_wlodzimierz() {
+    assert!(double_metaphone("Wlodzimierz").is_some());
+}
