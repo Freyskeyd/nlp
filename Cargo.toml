@@ -2,6 +2,7 @@
 name = "nlp"
 version = "0.1.0"
 authors = ["Freyskeyd <contact@freyskeyd.fr>"]
+license = "MIT/Apache-2.0"
 exclude = [
     "circle.yml",
     "words2.txt"
