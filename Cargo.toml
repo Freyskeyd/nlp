@@ -1,6 +1,8 @@
 [package]
 name = "nlp"
-version = "0.1.0"
+repository = "https://github.com/Freyskeyd/nlp"
+description = "NLP library"
+version = "0.1.1"
 authors = ["Freyskeyd <contact@freyskeyd.fr>"]
 license = "MIT/Apache-2.0"
 exclude = [
@@ -14,5 +16,5 @@ dev = ["clippy"]
 
 [dependencies]
 itertools = "0.4.3"
-clippy = { version = "*", optional = true }
+clippy = { version = "0.0.35", optional = true }
 
