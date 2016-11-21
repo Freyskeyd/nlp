@@ -1,14 +1,14 @@
 [root]
 name = "nlp"
-version = "0.1.0"
+version = "0.1.1"
 dependencies = [
- "clippy 0.0.23 (registry+https://github.com/rust-lang/crates.io-index)",
+ "clippy 0.0.35 (registry+https://github.com/rust-lang/crates.io-index)",
  "itertools 0.4.3 (registry+https://github.com/rust-lang/crates.io-index)",
 ]
 
 [[package]]
 name = "clippy"
-version = "0.0.23"
+version = "0.0.35"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 dependencies = [
  "unicode-normalization 0.1.1 (registry+https://github.com/rust-lang/crates.io-index)",
@@ -24,3 +24,7 @@ name = "unicode-normalization"
 version = "0.1.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 
+[metadata]
+"checksum clippy 0.0.35 (registry+https://github.com/rust-lang/crates.io-index)" = "26d5ef8c2e6ee8a047eac517fc645c02792d26b729245fb44a7d59b9023ed574"
+"checksum itertools 0.4.3 (registry+https://github.com/rust-lang/crates.io-index)" = "20707e41669ae77e21bebd5c5ac30b15fd666a5c5039b0ac3e4a44c27c041af3"
+"checksum unicode-normalization 0.1.1 (registry+https://github.com/rust-lang/crates.io-index)" = "c1f678822e45cdc6cf6f56ebd0f4b467328b3425c05e2398a29ddcc50ff0e278"
