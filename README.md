@@ -25,13 +25,6 @@ Use multirust with `nightly`.
 
 ```bash
 $ cd to/project
-$ multirust override nightly
-$ rustc -V
-rustc 1.X.X-nightly
-$ cargo test --features "dev"
-$ multirust remove-override
-$ rustc -V
-rustc 1.X.X
 $ cargo test
 ```
 

@@ -10,10 +10,6 @@ exclude = [
     "words2.txt"
 ]
 
-[features]
-default = []
-dev = ["clippy"]
-
 [dependencies]
 itertools = "0.4.3"
 clippy = { version = "0.0.35", optional = true }

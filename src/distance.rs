@@ -1,6 +1,22 @@
+use std::cmp::Ordering;
 use std::cmp::{min, max};
 use std::iter::repeat;
-use std::ptr;
+
+fn max_length(a: &str, b: &str) -> usize {
+    max(a.len(), b.len())
+}
+
+fn min_bound(i: &usize, search_range: &usize) -> usize {
+    if i > search_range {
+        max(0, i - search_range)
+    } else {
+        0
+    }
+}
+
+fn max_bound(b: &str, i: &usize, search_range: &usize) -> usize {
+    min(b.len() - 1, i + search_range)
+}
 
 /// Calculates the Jaro similarity between two strings. The returned value is between 0.0 and 1.0
 /// (higher value means more similar).
@@ -23,7 +39,7 @@ pub fn jaro(a: &str, b: &str) -> f64 {
     let a = a.to_uppercase();
     let b = b.to_uppercase();
 
-    let search_range = max(0, (max(a.len(), b.len()) / 2) - 1);
+    let search_range = max(0, (max_length(&a, &b) / 2) - 1);
 
     let mut b_consumed: Vec<bool> = repeat(false).take(b.len()).collect::<Vec<bool>>();
 
@@ -32,13 +48,8 @@ pub fn jaro(a: &str, b: &str) -> f64 {
     let mut b_match_index = 0;
 
     for (i, a_char) in a.chars().enumerate() {
-        let min_bound = if i > search_range {
-            max(0, i - search_range)
-        } else {
-            0
-        };
-
-        let max_bound = min(b.len() - 1, i + search_range);
+        let min_bound = min_bound(&i, &search_range);
+        let max_bound = max_bound(&b, &i, &search_range);
 
         if min_bound > max_bound {
             continue;
@@ -63,8 +74,8 @@ pub fn jaro(a: &str, b: &str) -> f64 {
         0.0
     } else {
         (1.0 / 3.0) *
-        ((matches / a.len() as f64) + (matches / b.len() as f64) +
-         ((matches - transpositions) / matches))
+            ((matches / a.len() as f64) + (matches / b.len() as f64) +
+             ((matches - transpositions) / matches))
     }
 }
 
@@ -83,12 +94,12 @@ pub fn jaro_winkler<T:ToString + ?Sized>(a: &T, b: &T) -> f64 {
     let jaro_distance = jaro(&a, &b);
 
     let prefrix_length = a.chars()
-                          .zip(b.chars())
-                          .take_while(|&(a_char, b_char)| a_char == b_char)
-                          .count();
+        .zip(b.chars())
+        .take_while(|&(a_char, b_char)| a_char == b_char)
+        .count();
 
     let jaro_winkler_distance = jaro_distance +
-                                (0.1 * prefrix_length as f64 * (1.0 - jaro_distance));
+        (0.1 * prefrix_length as f64 * (1.0 - jaro_distance));
 
     if jaro_winkler_distance <= 1.0 {
         jaro_winkler_distance
@@ -111,38 +122,32 @@ pub fn jaro_winkler<T:ToString + ?Sized>(a: &T, b: &T) -> f64 {
 ///
 /// ```
 pub fn levenshtein(a: &str, b: &str) -> usize {
-    if a == b {
-        return 0;
-    } else if a.len() == 0 {
-        return b.len();
-    } else if b.len() == 0 {
-        return a.len();
-    }
+    match a.cmp(&b) {
+        Ordering::Equal => 0,
+        _ => match a.len() {
+            0 => b.len(),
+            _ => match b.len() {
+                0 => a.len(),
+                _ => {
+                    let mut prev_distances = (0..(b.len() as u16 + 1)).collect::<Vec<u16>>();
+                    let mut curr_distances = repeat(0).take(b.len()+1).collect::<Vec<u16>>();
 
-    let mut prev_distances: Vec<u16> = (0..(b.len() as u16 + 1)).collect::<Vec<u16>>();
-    let mut curr_distances: Vec<u16> = repeat(0).take(b.len()+1).collect::<Vec<u16>>();
+                    for (i, a_char) in a.chars().enumerate() {
+                        curr_distances[0] = i as u16 + 1;
 
-    for (i, a_char) in a.chars().enumerate() {
-        curr_distances[0] = i as u16 + 1;
+                        for (j, b_char) in b.chars().enumerate() {
+                            curr_distances[j + 1]  = min(curr_distances[j] + 1,
+                                                         min(prev_distances[j + 1] + 1, prev_distances[j] + (a_char != b_char) as u16));
+                        }
 
-        for (j, b_char) in b.chars().enumerate() {
-            let cost = if a_char == b_char {
-                0
-            } else {
-                1
-            };
+                        prev_distances.clone_from(&curr_distances);
+                    }
 
-            curr_distances[j + 1]  = min(curr_distances[j] + 1,
-                                        min(prev_distances[j + 1] + 1, prev_distances[j] + cost));
-        }
-
-        unsafe {
-            let slice_ptr = (&curr_distances[..]).as_ptr();
-            ptr::copy(slice_ptr, prev_distances.as_mut_ptr(), prev_distances.len());
+                    curr_distances[b.len()] as usize
+                }
+            }
         }
     }
-
-    curr_distances[b.len()] as usize
 }
 
 /// Calculates the levenshtein distance between a string and each string in a vector. Returns a
@@ -233,8 +238,8 @@ mod tests {
 
     #[test]
     fn jaro_2() {
-       assert!( (100.0 * jaro("FUCK", "FUKC").abs()) > 90.0 );
-       assert!( (100.0 * jaro("Fuck", "FUKC").abs()) > 90.0 );
+        assert!( (100.0 * jaro("FUCK", "FUKC").abs()) > 90.0 );
+        assert!( (100.0 * jaro("Fuck", "FUKC").abs()) > 90.0 );
     }
 
     #[test]
