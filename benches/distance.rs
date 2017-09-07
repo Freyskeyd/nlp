@@ -26,6 +26,7 @@ fn bench_jaro_winkler(b: &mut Bencher) {
 }
 
 #[bench]
+#[ignore]
 fn bench_levenshtein_fast_10_k(b: &mut Bencher) {
 
     let path = Path::new("words2.txt");
@@ -42,6 +43,7 @@ fn bench_levenshtein_fast_10_k(b: &mut Bencher) {
 }
 
 #[bench]
+#[ignore]
 fn bench_jaro_fast_10_k(b: &mut Bencher) {
 
     let path = Path::new("words2.txt");
@@ -58,6 +60,7 @@ fn bench_jaro_fast_10_k(b: &mut Bencher) {
 }
 
 #[bench]
+#[ignore]
 fn bench_jaro_winkler_fast_10_k(b: &mut Bencher) {
 
     let path = Path::new("words2.txt");

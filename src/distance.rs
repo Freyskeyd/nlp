@@ -124,29 +124,38 @@ pub fn jaro_winkler<T:ToString + ?Sized>(a: &T, b: &T) -> f64 {
 pub fn levenshtein(a: &str, b: &str) -> usize {
     match a.cmp(&b) {
         Ordering::Equal => 0,
-        _ => match a.len() {
-            0 => b.len(),
-            _ => match b.len() {
-                0 => a.len(),
-                _ => {
-                    let mut prev_distances = (0..(b.len() as u16 + 1)).collect::<Vec<u16>>();
-                    let mut curr_distances = repeat(0).take(b.len()+1).collect::<Vec<u16>>();
+        _ => if a.is_empty() {
+                b.chars().count()
+        } else if b.is_empty() {
+                a.chars().count()
+            } else {
 
-                    for (i, a_char) in a.chars().enumerate() {
-                        curr_distances[0] = i as u16 + 1;
+                let mut prev_distances: Vec<_> = (0..(b.len() + 1)).collect();
+                // let mut curr_distances: Vec<_> = repeat(0).take(b.len()+1).collect();
 
-                        for (j, b_char) in b.chars().enumerate() {
-                            curr_distances[j + 1]  = min(curr_distances[j] + 1,
-                                                         min(prev_distances[j + 1] + 1, prev_distances[j] + (a_char != b_char) as u16));
+                let mut last = 0;
+
+                for (i, a_char) in a.chars().enumerate() {
+                    let mut current = i;
+                    prev_distances[0] = current + 1;
+
+                    for (j, b_char) in b.chars().enumerate() {
+                        let next = prev_distances[j + 1];
+
+                        if a_char == b_char {
+                            prev_distances[j + 1] = current;
+                        } else {
+                            prev_distances[j + 1] = min(current, next);
+                            prev_distances[j + 1] = min(prev_distances[j + 1], prev_distances[j]) + 1;
                         }
 
-                        prev_distances.clone_from(&curr_distances);
+                        current = next;
+                        last = j;
                     }
-
-                    curr_distances[b.len()] as usize
                 }
+
+                prev_distances[last + 1]
             }
-        }
     }
 }
 
